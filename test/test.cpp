@@ -9,11 +9,11 @@ int main() {
 
     // util::read_inputs(input, "input2.txt");
     
-    std::string e = "hej:1:2.2";
+    std::string e = "1:2.2";
     std::string delim = ":";
     
-    std::tuple<std::string, int, double> t = 
-        util::string_split<std::string, int, double>(delim, e);
+    std::tuple<int, double> t = 
+        util::string_split<int, double>(delim, e);
 
 
 }

@@ -36,9 +36,13 @@ std::tuple<T, Ts...> string_split_help(std::string& delim, std::string& string) 
     std::string first = string.substr(0, i);
     std::string rest = string.substr(i + delim.length(), string.length());
 
+    // std::tuple<double> t1 = std::make_tuple(2.3);
+    // std::tuple<std::string> t2 = std::make_tuple("hej");
+    // auto t3 = std::tuple_cat<double, std::string>(t1, t2);
+
     std::tuple<T> first_tuple = string_split_help<T>(first);
-    std::tuple<Ts...> second_tuple = string_split_help<Ts...>(delim, rest);
-    return std::tuple_cat<T, Ts...>(first_tuple, second_tuple);
+    std::tuple<Ts...> second_tuple = string_split_help(delim, rest);
+    return std::tuple_cat(first_tuple, second_tuple);
 }
 
 template <>
