@@ -1,5 +1,4 @@
 import numpy as np
-from readinput import read_input
 import scipy.signal as signal
 import pdb
 
