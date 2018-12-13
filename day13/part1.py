@@ -1,6 +1,9 @@
 import numpy as np
 import pdb
 import time
+import array2gif as gif
+import scipy.misc as misc
+import random
 
 TURN_LEFT = 0
 TURN_STRAIGHT = 1
@@ -50,39 +53,30 @@ def find_cart_at(pos, carts):
             return cart
     return None
 
-def print_state(inp, carts, col_dict):
-    reset = '\u001b[0m' 
-    carts_d = {}
+frames = []
+
+def print_state(inp, carts, col_dict, frames):
+    # reset = '\u001b[0m' 
+    height = len(inp)
+    width = len(inp[0])
+    image = np.zeros((height, width, 3))
+
+    carts_d = set()
     for cart in carts:
         x, y = cart.pos
-        c = ''
-        if cart.orientation == LEFT:
-            c = '<'
-        elif cart.orientation == RIGHT:
-            c = '>'
-        elif cart.orientation == UP:
-            c = '^'
-        elif cart.orientation == DOWN:
-            c = 'v'
-        carts_d[(x, y)] = cart.color + c + reset
+        image[y, x] = cart.color
+        carts_d.add((x, y))
+        col_dict[x, y] = cart.color
 
-    lines = []
     for y in range(len(inp)):
-        row = []
         for x in range(len(inp[y])):
-            if (x, y) in carts_d:
-                row.append(carts_d[(x, y)])
-                cart = find_cart_at((x, y), carts)
-                col_dict[(x, y)] = cart.color
-            else:
+            if (x, y) not in carts_d:
                 if (x, y) in col_dict:
                     color = col_dict[(x, y)]
-                    row.append(color + inp[y][x] + reset)
-                else:
-                    row.append(inp[y][x])
+                    image[y, x, :] = color
 
-        lines.append(''.join(row))
-    print(''.join(lines))
+    frames.append(misc.imresize(image, (height*2, width*2),
+                                interp='nearest'))
 
 
 def get_collision(carts):
@@ -105,34 +99,39 @@ def remove_carts_at(carts, pos):
                 edited = True
                 break
 
+def generate_color():
+    return (
+        random.randint(0, 255),
+        random.randint(0, 255),
+        random.randint(0, 255)
+           )
+
 inp = read_input("input.txt", str)
 
 carts = []
 
 for y in range(len(inp)):
     line = inp[y]
-    colors = ['\u001b[31m', '\u001b[32m', 
-              '\u001b[33m', '\u001b[34m', '\u001b[35m']
-    color_i = 0
     for x in range(len(line)):
         c = line[x]
         if c == '<':
-            cart = Cart((x, y), LEFT, colors[color_i])
+            cart = Cart((x, y), LEFT, generate_color())
             carts.append(cart)
         elif c == '>':
-            cart = Cart((x, y), RIGHT, colors[color_i])
+            cart = Cart((x, y), RIGHT, generate_color())
             carts.append(cart)
         elif c == 'v':
-            cart = Cart((x, y), DOWN, colors[color_i])
+            cart = Cart((x, y), DOWN, generate_color())
             carts.append(cart)
         elif c == '^':
-            cart = Cart((x, y), UP, colors[color_i])
+            cart = Cart((x, y), UP, generate_color())
             carts.append(cart)
-        color_i = (color_i + 1) % len(colors)
     inp[y] = line.replace('>','-').replace('<','-').replace('v','|').replace('^','|')
 
-while True:
-    print_state(inp, carts, col_dict)
+max_it = 1000
+it = 0
+while it < max_it:
+    print_state(inp, carts, col_dict, frames)
     collided = []
     col_set = set()
     for cart in carts:
@@ -193,7 +192,9 @@ while True:
     if len(carts) == 1:
         print("ONLY CART LEFT AT", carts[0].pos)
         break
+    it += 1
 
-    time.sleep(0.02)
+    #time.sleep(0.02)
 
+gif.write_gif(frames, 'test.gif', fps=20)
 
