@@ -1,5 +1,4 @@
 import numpy as np
-from readinput import read_input
 import pdb
 import time
 
@@ -15,12 +14,19 @@ RIGHT = 3
 NORMAL = 0
 INTERSECTION = 1
 
+def read_input(fname, data_type):
+    nums = []
+    with open(fname) as f:
+        nums = [data_type(x) for x in f.readlines()]
+    return nums 
+
 class Cart:
 
-    def __init__(self, pos, orientation):
+    def __init__(self, pos, orientation, color):
         self.pos = pos
         self.next_turn = 0
         self.orientation = orientation
+        self.color = color
 
     def turn(self):
         t = self.next_turn
@@ -36,7 +42,16 @@ class Cart:
         self.pos = (x + dx, y + dy)
 
 
-def print_state(inp, carts):
+col_dict = {}
+
+def find_cart_at(pos, carts):
+    for cart in carts:
+        if cart.pos == pos:
+            return cart
+    return None
+
+def print_state(inp, carts, col_dict):
+    reset = '\u001b[0m' 
     carts_d = {}
     for cart in carts:
         x, y = cart.pos
@@ -49,7 +64,7 @@ def print_state(inp, carts):
             c = '^'
         elif cart.orientation == DOWN:
             c = 'v'
-        carts_d[(x, y)] = c
+        carts_d[(x, y)] = cart.color + c + reset
 
     lines = []
     for y in range(len(inp)):
@@ -57,8 +72,15 @@ def print_state(inp, carts):
         for x in range(len(inp[y])):
             if (x, y) in carts_d:
                 row.append(carts_d[(x, y)])
+                cart = find_cart_at((x, y), carts)
+                col_dict[(x, y)] = cart.color
             else:
-                row.append(inp[y][x])
+                if (x, y) in col_dict:
+                    color = col_dict[(x, y)]
+                    row.append(color + inp[y][x] + reset)
+                else:
+                    row.append(inp[y][x])
+
         lines.append(''.join(row))
     print(''.join(lines))
 
@@ -89,24 +111,28 @@ carts = []
 
 for y in range(len(inp)):
     line = inp[y]
+    colors = ['\u001b[31m', '\u001b[32m', 
+              '\u001b[33m', '\u001b[34m', '\u001b[35m']
+    color_i = 0
     for x in range(len(line)):
         c = line[x]
         if c == '<':
-            cart = Cart((x, y), LEFT)
+            cart = Cart((x, y), LEFT, colors[color_i])
             carts.append(cart)
         elif c == '>':
-            cart = Cart((x, y), RIGHT)
+            cart = Cart((x, y), RIGHT, colors[color_i])
             carts.append(cart)
         elif c == 'v':
-            cart = Cart((x, y), DOWN)
+            cart = Cart((x, y), DOWN, colors[color_i])
             carts.append(cart)
         elif c == '^':
-            cart = Cart((x, y), UP)
+            cart = Cart((x, y), UP, colors[color_i])
             carts.append(cart)
+        color_i = (color_i + 1) % len(colors)
     inp[y] = line.replace('>','-').replace('<','-').replace('v','|').replace('^','|')
 
 while True:
-    print_state(inp, carts)
+    print_state(inp, carts, col_dict)
     collided = []
     col_set = set()
     for cart in carts:
@@ -163,11 +189,11 @@ while True:
             carts.remove(c1)
         if c2 in carts:
             carts.remove(c2)
-        print("COLLISION AT", (nx, ny))
+        # print("COLLISION AT", (nx, ny))
     if len(carts) == 1:
         print("ONLY CART LEFT AT", carts[0].pos)
         break
 
-    time.sleep(0.2)
+    time.sleep(0.02)
 
 
