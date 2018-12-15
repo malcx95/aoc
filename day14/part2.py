@@ -3,6 +3,7 @@ import numpy as np
 PATTERN = [0, 8, 4, 6, 0, 1]
 
 class LList:
+    __slots__ = ['data', 'next']
     def __init__(self, data):
         self.data = data
         self.next = None
