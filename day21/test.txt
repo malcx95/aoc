@@ -1,0 +1,39 @@
+#ip 1
+0:  seti 123 0 4 sätt r[4] = 123
+1:  bani 4 456 4 bitwise AND 456 och r[4]
+2:  eqri 4 72 4 kolla om r[4] == 72 -> r[4]
+3:  addr 4 1 1 hoppa till 5 om testet var sant
+4:  seti 0 0 1 repeat från 1 -> loopa testet igen
+5:  seti 0 2 4 sätt r[4] till 0
+6:  bori 4 65536 3 gör en bitwise OR mellan r[4] och 2^16 -> r[3]
+7:  seti 10552971 1 4 sätt r[4] till 10552971
+
+8:  bani 3 255 5 bitwise AND r[3] och 255 -> r[5]
+9:  addr 4 5 4 addera r[4] + r[5] -> r[4]
+10: bani 4 16777215 4 bitwise AND r[4] och 2^24 - 1 -> r[4]
+11: muli 4 65899 4 mult r[4]*65899 -> r[4]
+12: bani 4 16777215 4 bitwise AND r[4] och 2^24 - 1 -> r[4]
+13: gtir 256 3 5 om 256 > r[3] -> r[5]
+14: addr 5 1 1 hoppa till 16 (som hoppar till 28)
+15: addi 1 1 1 hoppa till 17 (som resettar r[5] och går in i loopen)
+16: seti 27 7 1 hoppa till 28
+17: seti 0 1 5 sätt r[5] till 0
+
+loop, exitar till 26 om r[2] > r[3]
+---------------------------------
+18: addi 5 1 2 addera r[5] + 1 -> r[2]
+19: muli 2 256 2 mult r[2]*256 -> r[2]
+20: gtrr 2 3 2 är r[2] > r[3] -> r[2]?
+21: addr 2 1 1 i så fall hoppa till 23 (som hoppar till 26)
+22: addi 1 1 1 annars hoppa til 24
+23: seti 25 0 1 hoppa till 26
+24: addi 5 1 5 addera r[5] + 1 -> r[5]
+25: seti 17 2 1 hoppa till 18 (eftersom 17 + 1 = 18)
+----------------------------------
+
+26: setr 5 7 3 kopiera r[5] -> r[3]
+27: seti 7 8 1 sätt r[1] till 7 -> hoppa till 8
+
+28: eqrr 4 0 5 är r[4] == r[0] -> r[5]
+29: addr 5 1 1 avsluta om de var lika
+30: seti 5 0 1 annars börja om från 6
