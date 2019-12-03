@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 enum WireStep {
     Up(i32),
@@ -43,9 +43,10 @@ fn main() {
 
     let mut sets = vec!();
 
-    for wire in wires {
-        let mut used_positions = HashSet::new();
+    for wire in &wires {
+        let mut used_positions = HashMap::new();
         let mut curr = (0, 0);
+        let mut dist = 0;
         for step in wire {
             let (dx, dy, a) = match step {
                 WireStep::Up(amount) => (0, -1, amount),
@@ -55,24 +56,30 @@ fn main() {
             };
             let (cx, cy) = curr;
             for s in 1..(a+1) {
+                dist += 1;
                 curr = (cx + dx*s, cy + dy*s);
-                used_positions.insert(curr);
+                used_positions.insert(curr, dist);
             }
         }
         sets.push(used_positions);
     }
 
-    let intersection: Vec<&(i32, i32)> = sets[0].intersection(&sets[1]).collect();
-    println!("{}", intersection.len());
-    let mut closest = (0, 0);
-    let mut dist = std::i32::MAX;
-    for (x, y) in intersection {
-        let d = x.abs() + y.abs();
-        if d < dist {
-            closest = (*x, *y);
-            dist = d;
+    let positions1 = &sets[0];
+    let positions2 = &sets[1];
+
+    let set1: HashSet<&(i32, i32)> = positions1.keys().collect();
+    let set2: HashSet<&(i32, i32)> = positions2.keys().collect();
+
+    let intersections: HashSet<&&(i32, i32)> = set1.intersection(&set2).collect();
+
+    let mut lowest_dist = std::i32::MAX;
+    for ints in intersections.iter() {
+        let dist1 = positions1.get(**ints).unwrap();
+        let dist2 = positions2.get(**ints).unwrap();
+        if dist1 + dist2 < lowest_dist {
+            lowest_dist = dist1 + dist2;
         }
     }
-    println!("Closest: {}", dist);
-    
+
+    println!("Distance: {}", lowest_dist);
 }
